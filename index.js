@@ -17,7 +17,10 @@ var dotabuff_heroes_url = "https://raw.githubusercontent.com/dotabuff/d2vpkr/mas
 var dotabuff_abilities_url = "https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/npc/npc_abilities.json";
 var dotabuff_items_url = "https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/npc/items.json";
 
-class Hero{
+var heroes_json_file = "./public/dotowiki_heroes.json";
+var items_json_file = "./public/dotowiki_items.json";
+
+class Hero {
   constructor() {
     // Name
     this.name = "";
@@ -68,7 +71,7 @@ class Hero{
   }
 }
 
-class Ability{
+class Ability {
   constructor() {
     this.id = "";
     this.key = "";
@@ -81,33 +84,45 @@ class Ability{
   }
 }
 
-class Item{
+class Item {
 
 }
 
 function returnJSON(res, data) {
-  console.log("Getting data is done!");
+  // console.log("Getting data is done!");
   res.setHeader('Content-Type', 'application/json');
   res.send(JSON.stringify(data));
 }
 
-var express = require('express');
-var app = express();
-var request = require('request');
+function sayHello() {
+  console.log("Hello from the other side!");
+}
 
-app.set('port', (process.env.PORT || 5000));
+function sayBye() {
+  console.log("Bye bye bye!");
+}
 
-app.use(express.static(__dirname + '/public'));
+var fs = require('fs');
 
-// views is directory for all template files
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
+function saveFile(file_path, data) {
+  fs.exists(file_path, function(exists) {
+    if (exists) {
+      console.log(file_path + " existed!");
+    } else {
+      console.log(file_path + " does not exist!");
+    }
+    console.log("Writing " + file_path + "...");
+    fs.writeFile(file_path, data, function(error) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("OK!");
+      }
+    });
+  });
+}
 
-app.get('/', function(request, response) {
-  response.render('pages/index');
-});
-
-app.get('/heroes', function(req, res) {
+function collectHeroes() {
   // Get hero list from official web api of dota 2 to ensure data is newest
   var url = dota2_webapi_url_heroes;
   console.log("Get data from " + url + "...");
@@ -123,6 +138,7 @@ app.get('/heroes', function(req, res) {
     data = JSON.parse(data);
     // console.log(data.result.status);
     if (data.result.status === 200) {
+      // Reset heroes list
       var heroes = [];
       for (var record of data.result.heroes) {
         // console.log(record.name);
@@ -171,7 +187,9 @@ app.get('/heroes', function(req, res) {
           });
           counter--;
           if (counter == 0) {
-            returnJSON(res, heroes);
+            // returnJSON(res, heroes);
+            // heroes_data = heroes;
+            saveFile(heroes_json_file, JSON.stringify(heroes));
           }
         });
 
@@ -314,7 +332,9 @@ app.get('/heroes', function(req, res) {
               });
               counter--;
               if (counter == 0) {
-                returnJSON(res, heroes);
+                // returnJSON(res, heroes);
+                // heroes_data = heroes;
+                saveFile(heroes_json_file, JSON.stringify(heroes));
               }
             });
           });
@@ -322,45 +342,42 @@ app.get('/heroes', function(req, res) {
       }
     }
   });
+}
 
-  // var url = 'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/npc/npc_heroes.json';
+var express = require('express');
+var app = express();
+var request = require('request');
 
-  // request(url, function(error, response, data) {
-  //   if (error) {
-  //     return console.log(error);
-  //   }
+app.set('port', (process.env.PORT || 5000));
 
-  //   if (response.statusCode !== 200) {
-  //     return console.log(response.statusCode)
-  //   }
+app.use(express.static(__dirname + '/public'));
 
-  //   // console.log(body);
-  //   // res.setHeader('Content-Type', 'application/json');
-  //   // res.send(JSON.stringify(data));
-  //   // res.send(JSON.stringify(data, null, 2));
-  //   // res.json(data);
-  // })
-});
-
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
-});
-
-// var express = require('express');
-// var app = express();
-
-// app.set('port', (process.env.PORT || 5000));
-
-// app.use(express.static(__dirname + '/public'));
-
-// // views is directory for all template files
-// app.set('views', __dirname + '/views');
-// app.set('view engine', 'ejs');
+// views is directory for all template files
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
 
 // app.get('/', function(request, response) {
 //   response.render('pages/index');
 // });
 
-// app.listen(app.get('port'), function() {
-//   console.log('Node app is running on port', app.get('port'));
+// app.get('/heroes', function(req, res) {
+//   returnJSON(res, heroes_data);
 // });
+
+collectHeroes();
+
+var CronJob = require('cron').CronJob;
+var job = new CronJob('00 00 */1 * * *', function() {
+    sayHello();
+    collectHeroes();
+  }, function () {
+    /* This function is executed when the job stops */
+    sayBye()
+  },
+  true, /* Start the job right now */
+  'America/Los_Angeles' /* Time zone of this job. */
+);
+
+app.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'));
+});

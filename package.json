@@ -12,7 +12,9 @@
   "dependencies": {
     "ejs": "2.4.1",
     "express": "4.13.3",
-    "request": "latest"
+    "request": "latest",
+    "node-schedule": "latest",
+    "cron": "latest"
   },
   "repository": {
     "type": "git",
