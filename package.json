@@ -14,7 +14,8 @@
     "express": "4.13.3",
     "request": "latest",
     "node-schedule": "latest",
-    "cron": "latest"
+    "cron": "latest",
+    "striptags": "latest"
   },
   "repository": {
     "type": "git",

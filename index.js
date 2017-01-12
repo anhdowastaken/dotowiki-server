@@ -360,6 +360,8 @@ function collectHeroes() {
   });
 }
 
+var striptags = require("striptags");
+
 function collectItems() {
   // Get items from dota 2 web api to ensure information is newest
   var url = dota2_webapi_url_items;
@@ -423,9 +425,9 @@ function collectItems() {
           data = JSON.parse(data);
           items.forEach(function(item, index) {
             if (data.itemdata[item.short_name]) {
-              items[index].description = data.itemdata[item.short_name].desc;
-              items[index].attribute = data.itemdata[item.short_name].attrib;
-              items[index].notes = data.itemdata[item.short_name].notes;
+              items[index].description = striptags(data.itemdata[item.short_name].desc);
+              items[index].attribute = striptags(data.itemdata[item.short_name].attrib);
+              items[index].notes = striptags(data.itemdata[item.short_name].notes);
               items[index].lore = data.itemdata[item.short_name].lore;
             }
           });
