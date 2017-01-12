@@ -85,7 +85,23 @@ class Ability {
 }
 
 class Item {
-
+  constructor() {
+    this.id = 0;
+    this.name = "";
+    this.short_name = "";
+    this.localized_name = "";
+    this.icon_url = "";
+    this.portrait_url = "";
+    this.cost = 0;
+    this.isRecipe = false;
+    this.inSecretShop = false;
+    this.inSideShop = false;
+    this.description = "";
+    this.attribute = "";
+    this.notes = "";
+    this.lore = "";
+    this.components = [];
+  }
 }
 
 function returnJSON(res, data) {
@@ -138,7 +154,7 @@ function collectHeroes() {
     data = JSON.parse(data);
     // console.log(data.result.status);
     if (data.result.status === 200) {
-      // Reset heroes list
+      // Reset hero list
       var heroes = [];
       for (var record of data.result.heroes) {
         // console.log(record.name);
@@ -344,6 +360,85 @@ function collectHeroes() {
   });
 }
 
+function collectItems() {
+  // Get items from dota 2 web api to ensure information is newest
+  var url = dota2_webapi_url_items;
+  console.log("Get data from " + url + "...");
+  request(url, function(error, response, data) {
+    if (error) {
+      return console.log(error);
+    }
+    if (response.statusCode !== 200) {
+      return console.log(response.statusCode);
+    }
+    data = JSON.parse(data);
+    if (data.result.status === 200) {
+      // Reset item list
+      var items = [];
+      for (var record of data.result.items) {
+        var item = new Item();
+        item.id = record.id
+        item.name = record.name;
+        item.short_name = record.name.replace("item_", "");
+        item.localized_name = record.localized_name;
+        item.icon_url = dota2_base_image_url_items + item.short_name + "_lg.png";
+        item.portrait_url = item.icon_url;
+        item.cost = record.cost;
+        if (record.recipe) {
+          item.isRecipe = true;
+        } else {
+          item.isRecipe = false;
+        }
+        if (record.secret_shop) {
+          item.inSecretShop = true;
+        } else {
+          item.inSecretShop = false;
+        }
+        if (record.side_shop) {
+          item.inSideShop = true;
+        } else {
+          item.inSideShop = false;
+        }
+
+        items.push(item);
+      }
+
+      // Ensure there is at least one item
+      if (items.length) {
+        var counter = 1;
+        // Get information of items from http://www.dota2.com/jsfeed/itemdata
+        url = jsfeed_itemdata_url;
+        console.log("Get data from " + url + "...");
+        request(url, function(error, response, data) {
+          if (error) {
+            console.log(error);
+            saveFile(items_json_file, items);
+            return;
+          }
+          if (response.statusCode !== 200) {
+            console.log(response.statusCode);
+            saveFile(items_json_file, items);
+            return;
+          }
+          data = JSON.parse(data);
+          items.forEach(function(item, index) {
+            if (data.itemdata[item.short_name]) {
+              items[index].description = data.itemdata[item.short_name].desc;
+              items[index].attribute = data.itemdata[item.short_name].attrib;
+              items[index].notes = data.itemdata[item.short_name].notes;
+              items[index].lore = data.itemdata[item.short_name].lore;
+            }
+          });
+          counter--;
+          if (counter == 0) {
+            saveFile(items_json_file, JSON.stringify(items));
+          }
+        });
+      }
+    }
+  });
+}
+
 var express = require('express');
 var app = express();
 var request = require('request');
@@ -365,11 +460,13 @@ app.set('view engine', 'ejs');
 // });
 
 collectHeroes();
+collectItems();
 
 var CronJob = require('cron').CronJob;
 var job = new CronJob('00 00 */1 * * *', function() {
     sayHello();
     collectHeroes();
+    collectItems();
   }, function () {
     /* This function is executed when the job stops */
     sayBye()
