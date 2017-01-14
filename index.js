@@ -138,6 +138,13 @@ function saveFile(file_path, data) {
   });
 }
 
+var striptags = require("striptags");
+
+function stripHTML(input_string) {
+  // TODO: Short this statement
+  return striptags(input_string.replace("<br />", "\r\n").replace("<br/>", "\r\n").replace("<br></br>", "\r\n"));
+}
+
 function collectHeroes() {
   // Get hero list from official web api of dota 2 to ensure data is newest
   var url = dota2_webapi_url_heroes;
@@ -198,7 +205,7 @@ function collectHeroes() {
           // console.log(heroes.length);
           heroes.forEach(function(hero, index) {
             if (data[hero.short_name]) {
-              heroes[index].lore = data[hero.short_name].bio;
+              heroes[index].lore = stripHTML(data[hero.short_name].bio);
             }
           });
           counter--;
@@ -335,10 +342,10 @@ function collectHeroes() {
                           ability.id = abilities[ability.name].id;
                           ability.key = key;
                           ability.full_name = abilities[ability.name].dname;
-                          ability.affects = abilities[ability.name].affects;
-                          ability.description = abilities[ability.name].desc;
-                          ability.notes = abilities[ability.name].notes;
-                          ability.lore = abilities[ability.name].lore;
+                          ability.affects = stripHTML(abilities[ability.name].affects);
+                          ability.description = stripHTML(abilities[ability.name].desc);
+                          ability.notes = stripHTML(abilities[ability.name].notes);
+                          ability.lore = stripHTML(abilities[ability.name].lore);
                           heroes[index].abilities.push(ability);
                         }
                       }
@@ -359,8 +366,6 @@ function collectHeroes() {
     }
   });
 }
-
-var striptags = require("striptags");
 
 function collectItems() {
   // Get items from dota 2 web api to ensure information is newest
@@ -425,10 +430,10 @@ function collectItems() {
           data = JSON.parse(data);
           items.forEach(function(item, index) {
             if (data.itemdata[item.short_name]) {
-              items[index].description = striptags(data.itemdata[item.short_name].desc);
-              items[index].attribute = striptags(data.itemdata[item.short_name].attrib);
-              items[index].notes = striptags(data.itemdata[item.short_name].notes);
-              items[index].lore = data.itemdata[item.short_name].lore;
+              items[index].description = stripHTML(data.itemdata[item.short_name].desc);
+              items[index].attribute = stripHTML(data.itemdata[item.short_name].attrib);
+              items[index].notes = stripHTML(data.itemdata[item.short_name].notes);
+              items[index].lore = stripHTML(data.itemdata[item.short_name].lore);
             }
           });
           counter--;
