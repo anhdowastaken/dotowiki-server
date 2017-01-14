@@ -84,6 +84,13 @@ class Ability {
   }
 }
 
+class ItemDescription {
+  constructor() {
+    this.text = "";
+    this.parameters = {};
+  }
+}
+
 class Item {
   constructor() {
     this.id = 0;
@@ -96,7 +103,7 @@ class Item {
     this.isRecipe = false;
     this.inSecretShop = false;
     this.inSideShop = false;
-    this.description = "";
+    this.description = new ItemDescription();
     this.attribute = "";
     this.notes = "";
     this.lore = "";
@@ -412,7 +419,7 @@ function collectItems() {
 
       // Ensure there is at least one item
       if (items.length) {
-        var counter = 1;
+        var counter = 2;
         // Get information of items from http://www.dota2.com/jsfeed/itemdata
         url = jsfeed_itemdata_url;
         console.log("Get data from " + url + "...");
@@ -430,7 +437,7 @@ function collectItems() {
           data = JSON.parse(data);
           items.forEach(function(item, index) {
             if (data.itemdata[item.short_name]) {
-              items[index].description = stripHTML(data.itemdata[item.short_name].desc);
+              items[index].description.text = stripHTML(data.itemdata[item.short_name].desc);
               items[index].attribute = stripHTML(data.itemdata[item.short_name].attrib);
               items[index].notes = stripHTML(data.itemdata[item.short_name].notes);
               items[index].lore = stripHTML(data.itemdata[item.short_name].lore);
@@ -438,6 +445,62 @@ function collectItems() {
           });
           counter--;
           if (counter == 0) {
+            items.forEach(function(item, index) {
+              // Replace parameters in description with corresponding values
+              // console.log(items[index].description.text);
+              items[index].description = items[index].description.text.replace(
+                /(%[^%]*%)/g,
+                function(match, p1, offset, string) {
+                  if (items[index].description.parameters[p1]) {
+                    return match.replace(match, items[index].description.parameters[p1]);
+                  }
+                }
+              );
+            });
+            saveFile(items_json_file, JSON.stringify(items));
+          }
+        });
+
+        url = dotabuff_items_url;
+        console.log("Get data from " + url + "...");
+        request(url, function(error, response, data) {
+          if (error) {
+            console.log(error);
+            saveFile(items_json_file, items);
+            return;
+          }
+          if (response.statusCode !== 200) {
+            console.log(response.statusCode);
+            saveFile(items_json_file, items);
+            return;
+          }
+          data = JSON.parse(data);
+          items.forEach(function(item, index) {
+            if (data.DOTAAbilities[item.name]) {
+              if (data.DOTAAbilities[item.name].AbilitySpecial) {
+                // console.log(item.name);
+                data.DOTAAbilities[item.name].AbilitySpecial.forEach(function(ability, i) {
+                  for (var key in ability) {
+                    items[index].description.parameters["%" + key +"%"] = ability[key];
+                  }
+                });
+              }
+            }
+          });
+          counter--;
+          if (counter == 0) {
+            items.forEach(function(item, index) {
+              // Replace parameters in description with corresponding values
+              // console.log(items[index].description.text);
+              items[index].description = items[index].description.text.replace(
+                /(%[^%]*%)/g,
+                function(match, p1, offset, string) {
+                  if (items[index].description.parameters[p1]) {
+                    return match.replace(match, items[index].description.parameters[p1]);
+                  }
+                }
+              );
+            });
             saveFile(items_json_file, JSON.stringify(items));
           }
         });
