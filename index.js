@@ -79,6 +79,7 @@ class Ability {
     this.full_name = "";
     this.affects = "";
     this.description = "";
+    this.attribute = "";
     this.notes = "";
     this.lore = "";
   }
@@ -351,6 +352,7 @@ function collectHeroes() {
                           ability.full_name = abilities[ability.name].dname;
                           ability.affects = stripHTML(abilities[ability.name].affects);
                           ability.description = stripHTML(abilities[ability.name].desc);
+                          ability.attribute = stripHTML(abilities[ability.name].attrib);
                           ability.notes = stripHTML(abilities[ability.name].notes);
                           ability.lore = stripHTML(abilities[ability.name].lore);
                           heroes[index].abilities.push(ability);
