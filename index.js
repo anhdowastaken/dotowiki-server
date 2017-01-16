@@ -53,10 +53,10 @@ class Hero {
     this.attributeAgilityGain = 0;
     this.movementSpeed = 300;
     this.movementTurnRate = 0.500000;
-    // this.statusHealth = 200;
-    // this.statusHealthRegen = 0.250000;
-    // this.statusMana = 50;
-    // this.statusManaRegen = 0.010000;
+    this.statusHealth = 200;
+    this.statusHealthRegen = 0.250000;
+    this.statusMana = 50;
+    this.statusManaRegen = 0.010000;
     this.visionDaytimeRange = 1800;
     this.visionNighttimeRange = 800;
 
@@ -272,20 +272,44 @@ function collectHeroes() {
                 if (data.DOTAHeroes[hero.name]) {
                   if (data.DOTAHeroes[hero.name].ArmorPhysical)
                     heroes[index].armorPhysical = Number(data.DOTAHeroes[hero.name].ArmorPhysical);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].ArmorPhysical)
+                    heroes[index].armorPhysical = Number(data.DOTAHeroes["npc_dota_hero_base"].ArmorPhysical);
+
                   if (data.DOTAHeroes[hero.name].MagicalResistance)
                     heroes[index].magicalResistance = Number(data.DOTAHeroes[hero.name].MagicalResistance);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].MagicalResistance)
+                    heroes[index].magicalResistance = Number(data.DOTAHeroes["npc_dota_hero_base"].MagicalResistance);
+
                   if (data.DOTAHeroes[hero.name].AttackDamageMin)
                     heroes[index].attackDamageMin = Number(data.DOTAHeroes[hero.name].AttackDamageMin);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttackDamageMin)
+                    heroes[index].attackDamageMin = Number(data.DOTAHeroes["npc_dota_hero_base"].AttackDamageMin);
+
                   if (data.DOTAHeroes[hero.name].AttackDamageMax)
                     heroes[index].attackDamageMax = Number(data.DOTAHeroes[hero.name].AttackDamageMax);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttackDamageMax)
+                    heroes[index].attackDamageMax = Number(data.DOTAHeroes["npc_dota_hero_base"].AttackDamageMax);
+
                   if (data.DOTAHeroes[hero.name].AttackRate)
                     heroes[index].attackRate = Number(data.DOTAHeroes[hero.name].AttackRate);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttackRate)
+                    heroes[index].attackRate = Number(data.DOTAHeroes["npc_dota_hero_base"].AttackRate);
+
                   if (data.DOTAHeroes[hero.name].AttackAnimationPoint)
                     heroes[index].attackAnimationPoint = Number(data.DOTAHeroes[hero.name].AttackAnimationPoint);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttackAnimationPoint)
+                    heroes[index].attackAnimationPoint = Number(data.DOTAHeroes["npc_dota_hero_base"].AttackAnimationPoint);
+
                   if (data.DOTAHeroes[hero.name].AttackAcquisitionRange)
                     heroes[index].attackAcquisitionRange = Number(data.DOTAHeroes[hero.name].AttackAcquisitionRange);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttackAcquisitionRange)
+                    heroes[index].attackAcquisitionRange = Number(data.DOTAHeroes["npc_dota_hero_base"].AttackAcquisitionRange);
+
                   if (data.DOTAHeroes[hero.name].AttackRange)
                     heroes[index].attackRange = Number(data.DOTAHeroes[hero.name].AttackRange);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttackRange)
+                    heroes[index].attackRange = Number(data.DOTAHeroes["npc_dota_hero_base"].AttackRange);
+
                   if (data.DOTAHeroes[hero.name].AttributePrimary) {
                     switch (data.DOTAHeroes[hero.name].AttributePrimary) {
                       case "DOTA_ATTRIBUTE_STRENGTH":
@@ -302,28 +326,60 @@ function collectHeroes() {
                         break;
                     }
                   }
+
                   if (data.DOTAHeroes[hero.name].AttributeBaseStrength)
                     heroes[index].attributeBaseStrength = Number(data.DOTAHeroes[hero.name].AttributeBaseStrength);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttributeBaseStrength)
+                    heroes[index].attributeBaseStrength = Number(data.DOTAHeroes["npc_dota_hero_base"].AttributeBaseStrength);
+
                   if (data.DOTAHeroes[hero.name].AttributeStrengthGain)
                     heroes[index].attributeStrengthGain = Number(data.DOTAHeroes[hero.name].AttributeStrengthGain);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttributeStrengthGain)
+                    heroes[index].attributeStrengthGain = Number(data.DOTAHeroes["npc_dota_hero_base"].AttributeStrengthGain);
+
                   if (data.DOTAHeroes[hero.name].AttributeBaseIntelligence)
                     heroes[index].attributeBaseIntelligence = Number(data.DOTAHeroes[hero.name].AttributeBaseIntelligence);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttributeBaseIntelligence)
+                    heroes[index].attributeBaseIntelligence = Number(data.DOTAHeroes["npc_dota_hero_base"].AttributeBaseIntelligence);
+
                   if (data.DOTAHeroes[hero.name].AttributeIntelligenceGain)
                     heroes[index].attributeIntelligenceGain = Number(data.DOTAHeroes[hero.name].AttributeIntelligenceGain);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttributeIntelligenceGain)
+                    heroes[index].attributeIntelligenceGain = Number(data.DOTAHeroes["npc_dota_hero_base"].AttributeIntelligenceGain);
+
                   if (data.DOTAHeroes[hero.name].AttributeBaseAgility)
                     heroes[index].attributeBaseAgility = Number(data.DOTAHeroes[hero.name].AttributeBaseAgility);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttributeBaseAgility)
+                    heroes[index].attributeBaseAgility = Number(data.DOTAHeroes["npc_dota_hero_base"].AttributeBaseAgility);
+
                   if (data.DOTAHeroes[hero.name].AttributeAgilityGain)
                     heroes[index].attributeAgilityGain = Number(data.DOTAHeroes[hero.name].AttributeAgilityGain);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].AttributeAgilityGain)
+                    heroes[index].attributeAgilityGain = Number(data.DOTAHeroes["npc_dota_hero_base"].AttributeAgilityGain);
+
                   if (data.DOTAHeroes[hero.name].MovementSpeed)
                     heroes[index].movementSpeed = Number(data.DOTAHeroes[hero.name].MovementSpeed);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].MovementSpeed)
+                    heroes[index].movementSpeed = Number(data.DOTAHeroes["npc_dota_hero_base"].MovementSpeed);
+
                   if (data.DOTAHeroes[hero.name].MovementTurnRate)
                     heroes[index].movementTurnRate = Number(data.DOTAHeroes[hero.name].MovementTurnRate);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].MovementTurnRate)
+                    heroes[index].movementTurnRate = Number(data.DOTAHeroes["npc_dota_hero_base"].MovementTurnRate);
+
                   if (data.DOTAHeroes[hero.name].VisionDaytimeRange)
                     heroes[index].visionDaytimeRange = Number(data.DOTAHeroes[hero.name].VisionDaytimeRange);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].VisionDaytimeRange)
+                    heroes[index].visionDaytimeRange = Number(data.DOTAHeroes["npc_dota_hero_base"].VisionDaytimeRange);
+
                   if (data.DOTAHeroes[hero.name].VisionNighttimeRange)
                     heroes[index].visionNighttimeRange = Number(data.DOTAHeroes[hero.name].VisionNighttimeRange);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].VisionNighttimeRange)
+                    heroes[index].visionNighttimeRange = Number(data.DOTAHeroes["npc_dota_hero_base"].VisionNighttimeRange);
+
                   if (data.DOTAHeroes[hero.name].Role)
                     heroes[index].role = data.DOTAHeroes[hero.name].Role;
+
                   if (data.DOTAHeroes[hero.name].Team) {
                     switch (data.DOTAHeroes[hero.name].Team) {
                       case "Good":
@@ -337,8 +393,31 @@ function collectHeroes() {
                         break;
                     }
                   }
+
                   if (data.DOTAHeroes[hero.name].Legs)
                     heroes[index].legs = Number(data.DOTAHeroes[hero.name].Legs);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].Legs)
+                    heroes[index].legs = Number(data.DOTAHeroes["npc_dota_hero_base"].Legs);
+
+                  if (data.DOTAHeroes[hero.name].StatusHealth)
+                    heroes[index].statusHealth = Number(data.DOTAHeroes[hero.name].StatusHealth);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].StatusHealth)
+                    heroes[index].statusHealth = Number(data.DOTAHeroes["npc_dota_hero_base"].StatusHealth);
+
+                  if (data.DOTAHeroes[hero.name].StatusHealthRegen)
+                    heroes[index].statusHealthRegen = Number(data.DOTAHeroes[hero.name].StatusHealthRegen);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].StatusHealthRegen)
+                    heroes[index].statusHealthRegen = Number(data.DOTAHeroes["npc_dota_hero_base"].StatusHealthRegen);
+
+                  if (data.DOTAHeroes[hero.name].StatusMana)
+                    heroes[index].statusMana = Number(data.DOTAHeroes[hero.name].StatusMana);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].StatusMana)
+                    heroes[index].statusMana = Number(data.DOTAHeroes["npc_dota_hero_base"].StatusMana);
+
+                  if (data.DOTAHeroes[hero.name].StatusManaRegen)
+                    heroes[index].statusManaRegen = Number(data.DOTAHeroes[hero.name].StatusManaRegen);
+                  else if (data.DOTAHeroes["npc_dota_hero_base"].StatusManaRegen)
+                    heroes[index].statusManaRegen = Number(data.DOTAHeroes["npc_dota_hero_base"].StatusManaRegen);
 
                   // Find key in format "Ability[1-9]"
                   for (var key in data.DOTAHeroes[hero.name]) {
