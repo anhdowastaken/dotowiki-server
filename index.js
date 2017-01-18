@@ -6,6 +6,7 @@ var dota2_webapi_url_heroes = dota2_webapi_url + "/GetHeroes/v1?key=" + D2_API_K
 var dota2_webapi_url_items = dota2_webapi_url + "/GetGameItems/v1?key=" + D2_API_KEY + "&language=en";
 var dota2_base_image_url = "http://cdn.dota2.com/apps/dota2/images";
 var dota2_base_image_url_heroes = dota2_base_image_url + "/heroes/";
+var dota2_base_image_url_abilities = dota2_base_image_url + "/abilities/";
 var dota2_base_image_url_items = dota2_base_image_url + "/items/";
 
 var jsfeed_heropickerdata_url = "http://www.dota2.com/jsfeed/heropickerdata";
@@ -77,6 +78,8 @@ class Ability {
     this.key = "";
     this.name = "";
     this.full_name = "";
+    this.icon_url = "";
+    this.portrait_url = "";
     this.affects = "";
     this.description = "";
     this.attribute = "";
@@ -423,8 +426,15 @@ function collectHeroes() {
                   for (var key in data.DOTAHeroes[hero.name]) {
                     if (data.DOTAHeroes[hero.name].hasOwnProperty(key)) {
                       if (/Ability[1-9]/.test(key)) {
+                        // TODO: There is an issue with Invoker. There is no description of special_bonus_unique_invoker_3 in http://www.dota2.com/jsfeed/abilitydata
+                        var ability = new Ability();
+                        ability.name = data.DOTAHeroes[hero.name][key];
+                        // "_md.png" 64x64
+                        // "_hp1.png" 90x90
+                        // "_hp2.png" 105x105
+                        ability.icon_url = dota2_base_image_url_abilities + ability.name + "_md.png";
+                        ability.portrait_url = dota2_base_image_url_abilities + ability.name + "_hp2.png"
                         if (abilities[data.DOTAHeroes[hero.name][key]] && abilities[data.DOTAHeroes[hero.name][key]].dname) {
-                          var ability = new Ability();
                           ability.name = data.DOTAHeroes[hero.name][key];
                           ability.id = abilities[ability.name].id;
                           ability.key = key;
@@ -434,13 +444,8 @@ function collectHeroes() {
                           ability.attribute = stripHTML(abilities[ability.name].attrib);
                           ability.notes = stripHTML(abilities[ability.name].notes);
                           ability.lore = stripHTML(abilities[ability.name].lore);
-                          heroes[index].abilities.push(ability);
-                        } else {
-                          // TODO: There is an issue with Invoker. There is no description of special_bonus_unique_invoker_3 in http://www.dota2.com/jsfeed/abilitydata
-                          var ability = new Ability();
-                          ability.name = data.DOTAHeroes[hero.name][key];
-                          heroes[index].abilities.push(ability);
                         }
+                        heroes[index].abilities.push(ability);
                       }
                     }
                   }
