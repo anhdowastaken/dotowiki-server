@@ -80,9 +80,11 @@ class Ability {
     this.full_name = "";
     this.icon_url = "";
     this.portrait_url = "";
-    this.affects = "";
     this.description = "";
+    this.affects = "";
+    this.damage = "";
     this.attribute = "";
+    this.cooldownAndManacost = "";
     this.notes = "";
     this.lore = "";
   }
@@ -439,9 +441,11 @@ function collectHeroes() {
                           ability.id = abilities[ability.name].id;
                           ability.key = key;
                           ability.full_name = abilities[ability.name].dname;
-                          ability.affects = stripHTML(abilities[ability.name].affects);
                           ability.description = stripHTML(abilities[ability.name].desc);
+                          ability.affects = stripHTML(abilities[ability.name].affects);
+                          ability.damage = stripHTML(abilities[ability.name].dmg);
                           ability.attribute = stripHTML(abilities[ability.name].attrib);
+                          ability.cooldownAndManacost = stripHTML(abilities[ability.name].cmb);
                           ability.notes = stripHTML(abilities[ability.name].notes);
                           ability.lore = stripHTML(abilities[ability.name].lore);
                         } else if (ability.name === "special_bonus_unique_invoker_3") {
