@@ -111,6 +111,8 @@ class Item {
     this.inSideShop = false;
     this.description = new ItemDescription();
     this.attribute = "";
+    this.manacost = 0;
+    this.cooldown = 0;
     this.notes = "";
     this.lore = "";
     this.components = [];
@@ -541,6 +543,10 @@ function collectItems() {
             if (data.itemdata[item.short_name]) {
               items[index].description.text = stripHTML(data.itemdata[item.short_name].desc);
               items[index].attribute = stripHTML(data.itemdata[item.short_name].attrib);
+              if (data.itemdata[item.short_name].mc)
+                items[index].manacost = Number(data.itemdata[item.short_name].mc);
+              if (data.itemdata[item.short_name].cd)
+                items[index].cooldown = Number(data.itemdata[item.short_name].cd);
               items[index].notes = stripHTML(data.itemdata[item.short_name].notes);
               items[index].lore = stripHTML(data.itemdata[item.short_name].lore);
             }
