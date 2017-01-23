@@ -549,8 +549,21 @@ function collectItems() {
                 items[index].cooldown = Number(data.itemdata[item.short_name].cd);
               items[index].notes = stripHTML(data.itemdata[item.short_name].notes);
               items[index].lore = stripHTML(data.itemdata[item.short_name].lore);
+              items[index].components = data.itemdata[item.short_name].components;
             }
           });
+
+          items.forEach(function(item, index) {
+            if (items[index].components !== null && items[index].components.length > 0) {
+              items[index].components.forEach(function(component, i) {
+                items[index].components[i] = {
+                  'short_name': items[index].components[i],
+                  'icon_url': dota2_base_image_url_items + items[index].components[i] + "_lg.png"
+                };
+              });
+            }
+          });
+
           counter--;
           if (counter == 0) {
             items.forEach(function(item, index) {
