@@ -15,7 +15,8 @@
     "request": "latest",
     "node-schedule": "latest",
     "cron": "latest",
-    "striptags": "latest"
+    "striptags": "latest",
+    "mongodb": "latest"
   },
   "repository": {
     "type": "git",

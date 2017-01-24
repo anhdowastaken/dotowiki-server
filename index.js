@@ -22,6 +22,16 @@ var heroes_json_file = "./public/dotowiki_heroes.json";
 var items_json_file = "./public/dotowiki_items.json";
 var last_update_json_file = "./public/last_update.json";
 
+// Lets require/import the mongodb native drivers.
+var mongodb = require('mongodb');
+
+// We need to work with "MongoClient" interface in order to connect to a mongodb server.
+var MongoClient = mongodb.MongoClient;
+
+// Connection URL. This is where your mongodb server is running.
+// mongodb://<dbuser>:<dbpassword>@ds129459.mlab.com:29459/dotowiki
+var mongodbUrl = 'mongodb://admin:admin27101988@ds129459.mlab.com:29459/dotowiki';
+
 class Hero {
   constructor() {
     // Name
@@ -258,6 +268,78 @@ function saveFile(file_path, data) {
   });
 }
 
+function saveToMongolab(collection_name, json_data) {
+  // Use connect method to connect to the Server
+  MongoClient.connect(mongodbUrl, function(err, db) {
+    if (err) {
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    } else {
+      //HURRAY!! We are connected. :)
+      console.log('Connection established to', mongodbUrl);
+
+      // Do some work here with the database.
+      var collection;
+
+      collection = db.collection(collection_name);
+      collection.find().toArray(function(err, docs) {
+        if (err) {
+          console.log(err);
+          db.close();
+          return;
+        } else {
+          // console.log(docs.length);
+        }
+
+        docs.forEach(function(doc, index) {
+          delete docs[index]._id;
+        });
+
+        docs = docs.sort(function(a, b) {
+            return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+        });
+
+        json_data = JSON.parse(JSON.stringify(json_data));
+        json_data = json_data.sort(function(a, b) {
+            return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+        });
+
+        if (compare2JSONObjects({'data': docs}, {'data': json_data}, false)) {
+          console.log("There is nothing new!");
+          db.close();
+          return;
+        } else {
+          console.log("There are somethings new!");
+          // Truncate collection
+          collection.drop();
+          // Add heroes to db
+          collection.insert(json_data, function(err, result) {
+            if (err) {
+              console.log(err);
+              db.close();
+              return;
+            } else {
+              // console.log(result.result);
+            }
+
+            collection = db.collection('last_update');
+            collection.drop();
+            collection.insert({'last_update': (new Date()).getTime()}, function(err, result) {
+              if (err) {
+                console.log(err);
+              } else {
+                // console.log(result.result);
+              }
+
+              //Close connection
+              db.close();
+            });
+          });
+        }
+      })
+    }
+  });
+}
+
 var striptags = require("striptags");
 
 function stripHTML(input_string) {
@@ -332,7 +414,9 @@ function collectHeroes() {
           if (counter == 0) {
             // returnJSON(res, heroes);
             // heroes_data = heroes;
-            saveFile(heroes_json_file, JSON.stringify(heroes));
+            // saveFile(heroes_json_file, JSON.stringify(heroes));
+
+            saveToMongolab('heroes', heroes);
           }
         });
 
@@ -573,7 +657,9 @@ function collectHeroes() {
               if (counter == 0) {
                 // returnJSON(res, heroes);
                 // heroes_data = heroes;
-                saveFile(heroes_json_file, JSON.stringify(heroes));
+                // saveFile(heroes_json_file, JSON.stringify(heroes));
+
+                saveToMongolab('heroes', heroes);
               }
             });
           });
@@ -635,12 +721,14 @@ function collectItems() {
         request(url, function(error, response, data) {
           if (error) {
             console.log(error);
-            saveFile(items_json_file, JSON.stringify(items));
+            // saveFile(items_json_file, JSON.stringify(items));
+            saveToMongolab('items', items);
             return;
           }
           if (response.statusCode !== 200) {
             console.log(response.statusCode);
-            saveFile(items_json_file, JSON.stringify(items));
+            // saveFile(items_json_file, JSON.stringify(items));
+            saveToMongolab('items', items);
             return;
           }
           data = JSON.parse(data);
@@ -683,7 +771,8 @@ function collectItems() {
                 }
               );
             });
-            saveFile(items_json_file, JSON.stringify(items));
+            // saveFile(items_json_file, JSON.stringify(items));
+            saveToMongolab('items', items);
           }
         });
 
@@ -692,12 +781,14 @@ function collectItems() {
         request(url, function(error, response, data) {
           if (error) {
             console.log(error);
-            saveFile(items_json_file, JSON.stringify(items));
+            // saveFile(items_json_file, JSON.stringify(items));
+            saveToMongolab('items', items);
             return;
           }
           if (response.statusCode !== 200) {
             console.log(response.statusCode);
-            saveFile(items_json_file, JSON.stringify(items));
+            // saveFile(items_json_file, JSON.stringify(items));
+            saveToMongolab('items', items);
             return;
           }
           data = JSON.parse(data);
@@ -727,7 +818,8 @@ function collectItems() {
                 }
               );
             });
-            saveFile(items_json_file, JSON.stringify(items));
+            // saveFile(items_json_file, JSON.stringify(items));
+            saveToMongolab('items', items);
           }
         });
       }
@@ -752,7 +844,93 @@ app.set('view engine', 'ejs');
 // });
 
 // app.get('/heroes', function(req, res) {
-//   returnJSON(res, heroes_data);
+//   // Use connect method to connect to the Server
+//   MongoClient.connect(mongodbUrl, function(err, db) {
+//     if (err) {
+//       console.log('Unable to connect to the mongoDB server. Error:', err);
+//     } else {
+//       //HURRAY!! We are connected. :)
+//       console.log('Connection established to', mongodbUrl);
+
+//       // Do some work here with the database.
+//       var collection;
+
+//       collection = db.collection('heroes');
+//       collection.find().toArray(function(err, docs) {
+//         if (err) {
+//           console.log(err);
+//           db.close();
+//           return;
+//         } else {
+//           // console.log(docs.length);
+//         }
+
+//         //Close connection
+//         db.close();
+//         returnJSON(res, docs);
+//       });
+//     }
+//   });
+// });
+
+// app.get('/items', function(req, res) {
+//   // Use connect method to connect to the Server
+//   MongoClient.connect(mongodbUrl, function(err, db) {
+//     if (err) {
+//       console.log('Unable to connect to the mongoDB server. Error:', err);
+//     } else {
+//       //HURRAY!! We are connected. :)
+//       console.log('Connection established to', mongodbUrl);
+
+//       // Do some work here with the database.
+//       var collection;
+
+//       collection = db.collection('items');
+//       collection.find().toArray(function(err, docs) {
+//         if (err) {
+//           console.log(err);
+//           db.close();
+//           return;
+//         } else {
+//           // console.log(docs.length);
+//         }
+
+//         //Close connection
+//         db.close();
+//         returnJSON(res, docs);
+//       });
+//     }
+//   });
+// });
+
+// app.get('/last_update', function(req, res) {
+//   // Use connect method to connect to the Server
+//   MongoClient.connect(mongodbUrl, function(err, db) {
+//     if (err) {
+//       console.log('Unable to connect to the mongoDB server. Error:', err);
+//     } else {
+//       //HURRAY!! We are connected. :)
+//       console.log('Connection established to', mongodbUrl);
+
+//       // Do some work here with the database.
+//       var collection;
+
+//       collection = db.collection('last_update');
+//       collection.find().toArray(function(err, docs) {
+//         if (err) {
+//           console.log(err);
+//           db.close();
+//           return;
+//         } else {
+//           // console.log(docs.length);
+//         }
+
+//         //Close connection
+//         db.close();
+//         returnJSON(res, docs);
+//       });
+//     }
+//   });
 // });
 
 collectHeroes();
