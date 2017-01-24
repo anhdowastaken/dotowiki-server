@@ -20,6 +20,7 @@ var dotabuff_items_url = "https://raw.githubusercontent.com/dotabuff/d2vpkr/mast
 
 var heroes_json_file = "./public/dotowiki_heroes.json";
 var items_json_file = "./public/dotowiki_items.json";
+var last_update_json_file = "./public/last_update.json";
 
 class Hero {
   constructor() {
@@ -119,6 +120,105 @@ class Item {
   }
 }
 
+function compare2JSONObjects(x, y, isDeepCompare) {
+  if (isDeepCompare) {
+    var i, p, l;
+    var leftChain = [];
+    var rightChain = [];
+
+    // remember that NaN === NaN returns false
+    // and isNaN(undefined) returns true
+    if (isNaN(x) && isNaN(y) && typeof x === 'number' && typeof y === 'number') {
+      return true;
+    }
+
+    // Compare primitives and functions.
+    // Check if both arguments link to the same object.
+    // Especially useful on the step where we compare prototypes
+    if (x === y) {
+      return true;
+    }
+
+    // Works in case when functions are created in constructor.
+    // Comparing dates is a common scenario. Another built-ins?
+    // We can even handle functions passed across iframes
+    if ((typeof x === 'function' && typeof y === 'function') ||
+    (x instanceof Date && y instanceof Date) ||
+    (x instanceof RegExp && y instanceof RegExp) ||
+    (x instanceof String && y instanceof String) ||
+    (x instanceof Number && y instanceof Number)) {
+      return x.toString() === y.toString();
+    }
+
+    // At last checking prototypes as good as we can
+    if (!(x instanceof Object && y instanceof Object)) {
+      return false;
+    }
+
+    if (x.isPrototypeOf(y) || y.isPrototypeOf(x)) {
+      return false;
+    }
+
+    if (x.constructor !== y.constructor) {
+      return false;
+    }
+
+    if (x.prototype !== y.prototype) {
+      return false;
+    }
+
+    // Check for infinitive linking loops
+    if (leftChain.indexOf(x) > -1 || rightChain.indexOf(y) > -1) {
+       return false;
+    }
+
+    // Quick checking of one object being a subset of another.
+    // todo: cache the structure of arguments[0] for performance
+    for (p in y) {
+      if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+        return false;
+      }
+      else if (typeof y[p] !== typeof x[p]) {
+        return false;
+      }
+    }
+
+    for (p in x) {
+      if (y.hasOwnProperty(p) !== x.hasOwnProperty(p)) {
+        return false;
+      } else if (typeof y[p] !== typeof x[p]) {
+        return false;
+      }
+
+      switch (typeof (x[p])) {
+        case 'object':
+        case 'function':
+
+          leftChain.push(x);
+          rightChain.push(y);
+
+          if (!compare2JSONObjects(x[p], y[p], true)) {
+            return false;
+          }
+
+          leftChain.pop();
+          rightChain.pop();
+          break;
+
+        default:
+          if (x[p] !== y[p]) {
+              return false;
+          }
+          break;
+      }
+    }
+
+    return true;
+  } else {
+    return (JSON.stringify(x) === JSON.stringify(y));
+  }
+}
+
 function returnJSON(res, data) {
   // console.log("Getting data is done!");
   res.setHeader('Content-Type', 'application/json');
@@ -139,10 +239,15 @@ function saveFile(file_path, data) {
   fs.exists(file_path, function(exists) {
     if (exists) {
       console.log(file_path + " existed!");
+      if (compare2JSONObjects(JSON.parse(data), JSON.parse(fs.readFileSync(file_path)), true)) {
+        console.log("There is nothing new!");
+        return;
+      }
     } else {
       console.log(file_path + " does not exist!");
     }
     console.log("Writing " + file_path + "...");
+    fs.writeFileSync(last_update_json_file, JSON.stringify({'last_update': (new Date()).getTime()}));
     fs.writeFile(file_path, data, function(error) {
       if (error) {
         console.log(error);
@@ -530,12 +635,12 @@ function collectItems() {
         request(url, function(error, response, data) {
           if (error) {
             console.log(error);
-            saveFile(items_json_file, items);
+            saveFile(items_json_file, JSON.stringify(items));
             return;
           }
           if (response.statusCode !== 200) {
             console.log(response.statusCode);
-            saveFile(items_json_file, items);
+            saveFile(items_json_file, JSON.stringify(items));
             return;
           }
           data = JSON.parse(data);
@@ -587,12 +692,12 @@ function collectItems() {
         request(url, function(error, response, data) {
           if (error) {
             console.log(error);
-            saveFile(items_json_file, items);
+            saveFile(items_json_file, JSON.stringify(items));
             return;
           }
           if (response.statusCode !== 200) {
             console.log(response.statusCode);
-            saveFile(items_json_file, items);
+            saveFile(items_json_file, JSON.stringify(items));
             return;
           }
           data = JSON.parse(data);
