@@ -117,6 +117,7 @@ class Item {
     this.icon_url = "";
     this.portrait_url = "";
     this.cost = 0;
+    this.quality = 0;
     this.isRecipe = false;
     this.inSecretShop = false;
     this.inSideShop = false;
@@ -294,14 +295,25 @@ function saveToMongolab(collection_name, json_data) {
           delete docs[index]._id;
         });
 
-        docs = docs.sort(function(a, b) {
-            return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
-        });
+        if (collection_name === 'heroes') {
+          docs = docs.sort(function(a, b) {
+            return ((a.localized_name < b.localized_name) ? -1 : ((a.localized_name > b.localized_name) ? 1 : 0));
+          });
 
-        json_data = JSON.parse(JSON.stringify(json_data));
-        json_data = json_data.sort(function(a, b) {
-            return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
-        });
+          json_data = JSON.parse(JSON.stringify(json_data));
+          json_data = json_data.sort(function(a, b) {
+            return ((a.localized_name < b.localized_name) ? -1 : ((a.localized_name > b.localized_name) ? 1 : 0));
+          });
+        } else if (collection_name === 'items') {
+          docs = docs.sort(function(a, b) {
+            return ((a.quality < b.quality) ? -1 : ((a.quality > b.quality) ? 1 : 0));
+          });
+
+          json_data = JSON.parse(JSON.stringify(json_data));
+          json_data = json_data.sort(function(a, b) {
+            return ((a.quality < b.quality) ? -1 : ((a.quality > b.quality) ? 1 : 0));
+          });
+        }
 
         if (compare2JSONObjects({'data': docs}, {'data': json_data}, false)) {
           console.log("There is nothing new!");
@@ -690,14 +702,15 @@ function collectItems() {
         item.name = record.name;
         item.short_name = record.name.replace("item_", "");
         item.localized_name = record.localized_name;
-        item.icon_url = dota2_base_image_url_items + item.short_name + "_lg.png";
-        item.portrait_url = item.icon_url;
-        item.cost = record.cost;
         if (record.recipe) {
           item.isRecipe = true;
+          item.icon_url = "http://cdn.dota2.com/apps/dota2/images/items/recipe_lg.png";
         } else {
           item.isRecipe = false;
+          item.icon_url = dota2_base_image_url_items + item.short_name + "_lg.png";
         }
+        item.portrait_url = item.icon_url;
+        item.cost = record.cost;
         if (record.secret_shop) {
           item.inSecretShop = true;
         } else {
@@ -734,6 +747,32 @@ function collectItems() {
           data = JSON.parse(data);
           items.forEach(function(item, index) {
             if (data.itemdata[item.short_name]) {
+              switch (data.itemdata[item.short_name].qual) {
+                case "consumable":
+                  items[index].quality = 0;
+                  break;
+                case "component":
+                  items[index].quality = 1;
+                  break;
+                case "common":
+                  items[index].quality = 2;
+                  break;
+                case "secret_shop":
+                  items[index].quality = 3;
+                  break;
+                case "rare":
+                  items[index].quality = 4;
+                  break;
+                case "artifact":
+                  items[index].quality = 5;
+                  break;
+                case "epic":
+                  items[index].quality = 6;
+                  break;
+                default:
+                  items[index].quality = 0;
+                  break;
+              }
               items[index].description.text = stripHTML(data.itemdata[item.short_name].desc);
               items[index].attribute = stripHTML(data.itemdata[item.short_name].attrib);
               if (data.itemdata[item.short_name].mc)
@@ -749,10 +788,16 @@ function collectItems() {
           items.forEach(function(item, index) {
             if (items[index].components !== null && items[index].components.length > 0) {
               items[index].components.forEach(function(component, i) {
-                items[index].components[i] = {
-                  'short_name': items[index].components[i],
-                  'icon_url': dota2_base_image_url_items + items[index].components[i] + "_lg.png"
-                };
+                // items[index].components[i] = {
+                //   'short_name': items[index].components[i],
+                //   'icon_url': dota2_base_image_url_items + items[index].components[i] + "_lg.png"
+                // };
+                for (var j=0; j < items.length; j++) {
+                  if (items[j].short_name === items[index].components[i]) {
+                    items[index].components[i] = items[j];
+                    break;
+                  }
+                }
               });
             }
           });
