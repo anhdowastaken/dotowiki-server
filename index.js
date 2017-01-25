@@ -1012,7 +1012,7 @@ collectHeroes();
 collectItems();
 
 var CronJob = require('cron').CronJob;
-var job = new CronJob('00 00 */1 * * *', function() {
+var job = new CronJob('00 */15 * * * *', function() {
     sayHello();
     collectHeroes();
     collectItems();
