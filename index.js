@@ -297,30 +297,46 @@ function saveToMongolab(collection_name, json_data) {
 
         if (collection_name === 'heroes') {
           docs = docs.sort(function(a, b) {
-            return ((a.localized_name < b.localized_name) ? -1 : ((a.localized_name > b.localized_name) ? 1 : 0));
+            return (a.localized_name.localeCompare(b.localized_name));
           });
+          docs = JSON.parse(JSON.stringify(docs));
 
-          json_data = JSON.parse(JSON.stringify(json_data));
           json_data = json_data.sort(function(a, b) {
-            return ((a.localized_name < b.localized_name) ? -1 : ((a.localized_name > b.localized_name) ? 1 : 0));
+            return (a.localized_name.localeCompare(b.localized_name));
           });
+          json_data = JSON.parse(JSON.stringify(json_data));
         } else if (collection_name === 'items') {
+          docs.forEach(function(doc, index) {
+            if (docs[index].components && docs[index].components.length > 0) {
+              docs[index].components.sort(function(a, b) {
+                return ((a.id < b.id) ? -1 : ((a.id > b.id) ? 1 : 0));
+              });
+            }
+          });
           docs = docs.sort(function(a, b) {
-            return ((a.quality < b.quality) ? -1 : ((a.quality > b.quality) ? 1 : 0));
+            return ((a.id < b.id) ? -1 : ((a.id > b.id) ? 1 : 0));
           });
+          docs = JSON.parse(JSON.stringify(docs));
 
-          json_data = JSON.parse(JSON.stringify(json_data));
-          json_data = json_data.sort(function(a, b) {
-            return ((a.quality < b.quality) ? -1 : ((a.quality > b.quality) ? 1 : 0));
+          json_data.forEach(function(doc, index) {
+            if (json_data[index].components && json_data[index].components.length > 0) {
+              json_data[index].components.sort(function(a, b) {
+                return ((a.id < b.id) ? -1 : ((a.id > b.id) ? 1 : 0));
+              });
+            }
           });
+          json_data = json_data.sort(function(a, b) {
+            return ((a.id < b.id) ? -1 : ((a.id > b.id) ? 1 : 0));
+          });
+          json_data = JSON.parse(JSON.stringify(json_data));
         }
 
         if (compare2JSONObjects({'data': docs}, {'data': json_data}, false)) {
-          console.log("There is nothing new!");
+          console.log("[" + collection_name + "] There is nothing new!");
           db.close();
           return;
         } else {
-          console.log("There are somethings new!");
+          console.log("[" + collection_name + "] There are somethings new!");
           // Truncate collection
           collection.drop();
           // Add heroes to db
@@ -838,6 +854,19 @@ function collectItems() {
           }
           data = JSON.parse(data);
           items.forEach(function(item, index) {
+            if (data.DOTAAbilities['item_recipe_' + item.short_name]) {
+              if (Number(data.DOTAAbilities['item_recipe_' + item.short_name].ItemCost) > 0
+                && (data.DOTAAbilities['item_recipe_' + item.short_name].ItemResult && data.DOTAAbilities['item_recipe_' + item.short_name].ItemResult === item.name)) {
+                for (var i = 0; i < items.length; i++)
+                {
+                  if (items[i].name === 'item_recipe_' + item.short_name) {
+                    items[index].components.push(items[i]);
+                    break;
+                  }
+                }
+              }
+            }
+
             if (data.DOTAAbilities[item.name]) {
               if (data.DOTAAbilities[item.name].AbilitySpecial) {
                 // console.log(item.name);
@@ -849,6 +878,7 @@ function collectItems() {
               }
             }
           });
+
           counter--;
           if (counter == 0) {
             items.forEach(function(item, index) {
